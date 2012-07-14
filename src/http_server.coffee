@@ -20,7 +20,7 @@ RackApplication = require "./rack_application"
 # `HttpServer` is a subclass of
 # [Connect](http://senchalabs.github.com/connect/)'s `HTTPServer` with
 # a custom set of middleware and a reference to a Pow `Configuration`.
-module.exports = class HttpServer extends connect.HTTPServer
+module.exports = class HttpServer extends connect.HTTPSServer
 
   # Connect depends on Function.prototype.length to determine
   # whether a given middleware is an error handler. These wrappers
@@ -43,12 +43,15 @@ module.exports = class HttpServer extends connect.HTTPServer
     res.writeHead status, "Content-Type": "text/html; charset=utf8", "X-Pow-Template": templateName
     res.end renderTemplate templateName, context
 
+  sslConfig =
+    pfx: fs.readFileSync('cert.pfx')
+
   # Create an HTTP server for the given configuration. This sets up
   # the middleware stack, gets a `Logger` instace for the global
   # access log, and registers a handler to close any running
   # applications when the server shuts down.
   constructor: (@configuration) ->
-    super [
+    super sslConfig, [
       o @logRequest
       o @annotateRequest
       o @handlePowRequest
